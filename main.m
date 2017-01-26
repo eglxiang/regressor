@@ -35,7 +35,7 @@ end
 % solve the OSVR optimization problem in ADMM
 [model,history,z] = admm(A,c,lambda,mu,'option',loss,'rho',rho,'max_iter',max_iter,'bias',1-bias); % 
 theta = model.w;
-    
+     
 %% Testing 
 % perform testing
 dec_values =theta'*[test_data; ones(1,size(test_data,2))];
@@ -52,3 +52,19 @@ icc_test = ICC(3,'single',dat); % Intra-Class Correlation (ICC)
 plot(test_label); hold on; 
 plot(dec_values,'r');
 legend('Ground truth','Prediction')
+
+% just lift 1 level
+dec_values_plus1 = dec_values + 1;
+
+% 
+dec_values_adjust = dec_values;
+for i=1:length(dec_values)
+    if dec_values_adjust(i)<0
+        dec_values_adjust(i) = 0
+    end
+end
+
+% just lift 1 level for the top 200 frames
+for i=1:200
+    dec_values_adjust(i) = dec_values_adjust(i) + 1;
+end
