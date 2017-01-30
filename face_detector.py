@@ -23,7 +23,7 @@ for subjectDir in os.listdir("Images/"):
         for fileNames in os.listdir("."):
             if fileNames.endswith(".png"):
                 img = io.imread(fileNames)
-                img = imutils.resize(img, width=min(400, img.shape[1]))
+                # img = imutils.resize(img, width=min(400, img.shape[1]))
                 dets = detector(img, 1) # The 1 in the second argument indicates that we should upsample the image
                                         # 1 time.  This will make everything bigger and allow us to detect more
                                         # faces.
@@ -34,11 +34,13 @@ for subjectDir in os.listdir("Images/"):
                 elif (len(dets)>1):
                     # print("{} faces detected in a single image".format(len(dets)))
                     len_2_cases.append(fileNames)
-                    # print (">1 "+fileNames)
-                else:
+                    win = dlib.image_window()
                     for i,d in enumerate(dets): 
                         imgCropped = img[d.top():d.bottom(),d.left():d.right()]
-			imgCropped = imutils.resize(imgCropped, width=180, height = 200)
+                        imgCropped = imutils.resize(imgCropped, width=180)
+                        win.set_image(img)
+                        win.add_overlay(dets)
+                        dlib.hit_enter_to_continue()
                         # tempVer = d.bottom()-d.top()
                         # tempHor = d.right()-d.left()
                         # if tempVer>maxDimVer:
@@ -49,6 +51,25 @@ for subjectDir in os.listdir("Images/"):
                         #     maxDimHorName=fileNames
                         file_name, file_extension = os.path.splitext(fileNames)
                         io.imsave(file_name+"_cropped.png",imgCropped)
+                    # print (">1 "+fileNames)
+                else:
+                    for i,d in enumerate(dets):
+                        try:
+                            imgCropped = img[d.top():d.bottom(),d.left():d.right()]
+                            imgCropped = imutils.resize(imgCropped, width=180, height = 200)
+                            # tempVer = d.bottom()-d.top()
+                            # tempHor = d.right()-d.left()
+                            # if tempVer>maxDimVer:
+                            #     maxDimVer=tempVer
+                            #     maxDimVerName=fileNames
+                            # if tempHor>maxDimHor:
+                            #     maxDimHor=tempHor
+                            #     maxDimHorName=fileNames
+                            file_name, file_extension = os.path.splitext(fileNames)
+                            io.imsave(file_name+"_cropped.png",imgCropped)
+                        except:
+                            print("Failed at {} because width was {} and height was {} ".format(fileNames,-1*(d.top()-d.bottom()),-1*(d.left()-d.right())))
+                
         os.chdir("../../..")
     print subjectDir
 
