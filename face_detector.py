@@ -15,11 +15,14 @@ t=time.time() # Measure time taken to run
 # initialize dlib face detector
 detector = dlib.get_frontal_face_detector()
 len_0_cases = []
-len_2_cases = []
+failure_cases=[]
 for subjectDir in os.listdir("Images/"):
 # subjectDir = "059-fn059"
+    print subjectDir
     for sessionDir in os.listdir("Images/"+subjectDir+"/"):
         os.chdir("Images/"+subjectDir+"/"+sessionDir+"/")
+        if not os.path.exists("Cropped/"):
+            os.makedirs("Cropped/")
         for fileNames in os.listdir("."):
             if fileNames.endswith(".png"):
                 img = io.imread(fileNames)
@@ -33,55 +36,37 @@ for subjectDir in os.listdir("Images/"):
                     # print ("<1 "+fileNames)
                 elif (len(dets)>1):
                     # print("{} faces detected in a single image".format(len(dets)))
-                    len_2_cases.append(fileNames)
-                    win = dlib.image_window()
                     for i,d in enumerate(dets): 
-                        imgCropped = img[d.top():d.bottom(),d.left():d.right()]
-                        imgCropped = imutils.resize(imgCropped, width=180)
-                        win.set_image(img)
-                        win.add_overlay(dets)
-                        dlib.hit_enter_to_continue()
-                        # tempVer = d.bottom()-d.top()
-                        # tempHor = d.right()-d.left()
-                        # if tempVer>maxDimVer:
-                        #     maxDimVer=tempVer
-                        #     maxDimVerName=fileNames
-                        # if tempHor>maxDimHor:
-                        #     maxDimHor=tempHor
-                        #     maxDimHorName=fileNames
-                        file_name, file_extension = os.path.splitext(fileNames)
-                        io.imsave(file_name+"_cropped.png",imgCropped)
-                    # print (">1 "+fileNames)
+                        try:
+                            if (d.right()-d.left())<0.33*img.shape[1]: # if the witdth is too small to be a face
+                                continue
+                            else:                            
+                                imgCropped = img[d.top():d.bottom(),d.left():d.right()]
+                                imgCropped = cv2.resize(imgCropped, (180,200), interpolation = cv2.INTER_CUBIC)
+                                file_name, file_extension = os.path.splitext(fileNames)
+                                io.imsave("Cropped/"+file_name+"_cropped.png",imgCropped)
+                        except:
+                            failure_cases.append(fileNames)
                 else:
                     for i,d in enumerate(dets):
                         try:
                             imgCropped = img[d.top():d.bottom(),d.left():d.right()]
-                            imgCropped = imutils.resize(imgCropped, width=180, height = 200)
-                            # tempVer = d.bottom()-d.top()
-                            # tempHor = d.right()-d.left()
-                            # if tempVer>maxDimVer:
-                            #     maxDimVer=tempVer
-                            #     maxDimVerName=fileNames
-                            # if tempHor>maxDimHor:
-                            #     maxDimHor=tempHor
-                            #     maxDimHorName=fileNames
+                            imgCropped = cv2.resize(imgCropped, (180,200), interpolation = cv2.INTER_CUBIC)
                             file_name, file_extension = os.path.splitext(fileNames)
-                            io.imsave(file_name+"_cropped.png",imgCropped)
+                            io.imsave("Cropped/"+file_name+"_cropped.png",imgCropped)
                         except:
-                            print("Failed at {} because width was {} and height was {} ".format(fileNames,-1*(d.top()-d.bottom()),-1*(d.left()-d.right())))
+                            failure_cases.append(fileNames)
                 
         os.chdir("../../..")
-    print subjectDir
+#    print("Done with {}.".format(subjectDir))    
 
-# print("Maximum Horizontal Dimension of face is {}".format(maxDimHor))
-# print("Maximum Vertical Dimension of face is {}".format(maxDimVer))                
 print("Elapsed time is {}".format(time.time()-t))
-len_0_file = open('len_0.txt', 'w')
+len_0_file = open('len_0.txt', 'a+')
 for item in len_0_cases:
     len_0_file.write("%s\n" % item)
 len_0_file.close()
-len_2_file = open('len_2.txt','w')
-for item in len_2_cases:
-    len_2_file.write("%s\n" % item)
-len_2_file.close()
+failure_file = open('failures.txt', 'a+')
+for item in failure_cases:
+    failure_file.write("%s\n" % item)
+failure_file.close()
 # 206 vert 186 hor
