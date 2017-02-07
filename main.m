@@ -11,7 +11,34 @@ clear all; close all;
 % of frame and the second column is associated intensity value
 % test_data: a D*T' matrix containing testing frames, where D is the
 % dimension of feature and T' is number of testing frames
-load('data.mat','train_data_seq','train_label_seq','test_data','test_label');
+% data preparation
+load('6-cls-sigmoid.mat');
+load('video_index.mat');
+%load('data.mat','train_data_seq','train_label_seq','test_data','test_label');
+vid_count=0;
+num_ppl = length(feature);
+% construct training data
+for i=1:(num_ppl-1)
+    idx_list = video_index{i,1};
+    numVid = length(idx_list);
+    end_idx = 0;
+    for j=1:numVid
+        vid_count = vid_count + 1;
+        start_idx = end_idx + 1;
+        num_frm = idx_list(j);
+        end_idx = end_idx + num_frm;
+        train_data_seq{1,vid_count} = feature{i,1}(:,start_idx:end_idx);
+        train_label_seq{1,vid_count}(:,1) = 1:num_frm;
+        train_label_seq{1,vid_count}(:,2) = ground_truth{i,1}(start_idx:end_idx);
+    end
+end
+% construct testing data
+idx_list = video_index{num_ppl,1};
+numVid = length(idx_list);
+start_idx = 1;
+end_idx = idx_list(j);
+test_data = feature{num_ppl,1}(:,start_idx:end_idx);
+test_label = ground_truth{num_ppl,1}(start_idx:end_idx);
 
 %% define constant
 loss = 2; % loss function of OSVR
