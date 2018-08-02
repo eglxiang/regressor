@@ -1,3 +1,5 @@
+This is adapted from Rui Zhao et al.'s paper for facial pain regression.
+
 ## OSVR
 
 Ordinal Support Vector Regression (OSVR) is a general purpose regression model that takes data samples as well as their pairwise ordinal relation as input and output the model parameters learned from data under the max-margin framework. Label (regression response) of each individual sample is not required. OSVR can adapt from no supervision (no labels) to full supervision (labels on all samples). In particular, OSVR can be very useful under weak supervision, where only labels on selected key samples are provided. However, ordinal information should always be available under different supervision settings. Current version 1.0 only supports linear regression model.
